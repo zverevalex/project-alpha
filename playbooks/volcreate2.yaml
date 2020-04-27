@@ -1,0 +1,73 @@
+- name: Create protected Volume
+  hosts: localhost
+  gather_facts: false
+  vars:
+      https:          true
+      validate_certs: false
+      use_rest:       "Always"
+
+  tasks:
+  - name: load vars
+    include_vars:
+      dir: ../vars
+
+  - name: Create volume on primary SVM
+    na_ontap_volume:
+      hostname:              "{{ PRI_CLU }}"
+      username:              "{{ PRI_CLU_USER }}"
+      password:              "{{ PRI_CLU_PASS }}"
+      state:                 present
+      name:                  "{{ PRI_SVM }}_nfs_01"
+      vserver:               "{{ PRI_SVM }}"
+      size:                  100
+      size_unit:             gb
+      aggregate_name:        "{{ PRI_AGGR }}"
+      comment:               Created with Ansible
+      space_guarantee:       volume
+      policy:                default
+      junction_path:         "/{{ PRI_SVM }}_nfs_01"
+      volume_security_style: unix
+
+  - name: Create volume on secondary SVM
+    na_ontap_volume:
+      hostname:              "{{ SEC_CLU }}"
+      username:              "{{ SEC_CLU_USER }}"
+      password:              "{{ SEC_CLU_PASS }}"
+      state:                 present
+      name:                  "{{ SEC_SVM }}_nfs_01_dst"
+      vserver:               "{{ SEC_SVM }}"
+      size:                  100
+      size_unit:             gb
+      aggregate_name:        "{{ SEC_AGGR }}"
+      comment:               Created with Ansible
+      space_guarantee:       volume
+      policy:                default
+    #  junction_path:         "/{{ PRI_SVM }}_nfs_01"
+      volume_security_style: unix
+      type: DP
+
+  - name: Create ONTAP/ONTAP SnapMirror
+    na_ontap_snapmirror:
+      state: present
+      connection_type: ontap_ontap
+      relationship_type: data_protection
+      source_volume: "{{ PRI_SVM }}_nfs_01"
+      destination_volume: "{{ SEC_SVM }}_nfs_01_dst"
+      source_vserver: "{{ PRI_SVM }}"
+      destination_vserver: "{{ SEC_SVM }}"
+      schedule: hourly
+      policy: MirrorAllSnapshots
+      max_transfer_rate: 1000
+#      initialize: True
+      hostname: "{{ SEC_CLU }}"
+      username: "{{ SEC_CLU_USER }}"
+      password: "{{ SEC_CLU_PASS }}"
+
+#  - name: Inititalize ONTAP/ONTAP SnapMirror
+#    na_ontap_snapmirror:
+#      state: present
+#      source_path: "{{ PRI_SVM }}:{{ PRI_SVM }}_nfs_01"
+#      destination_path: "{{ SEC_SVM }}:{{ SEC_SVM }}_nfs_01_dst"
+#      hostname: "{{ SEC_CLU }}"
+#      username: "{{ SEC_CLU_USER }}"
+#      password: "{{ SEC_CLU_PASS }}"

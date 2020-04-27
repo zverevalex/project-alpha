@@ -1,0 +1,16 @@
+PRI_CLU: 10.65.59.185
+PRI_CLU_USER: admin
+PRI_CLU_PASS: netapp01
+PRI_CLU_NODE1: baracuda-01
+PRI_CLU_NODE2: baracuda-02
+PRI_MGMT_PORT: e0c
+PRI_DATA_PORT: e0d
+PRI_SVM: alexz_primary_alpha
+SEC_CLU: 10.65.59.220
+SEC_CLU_USER: admin
+SEC_CLU_PASS: netapp01
+SEC_CLU_NODE1: trinidad-01
+SEC_CLU_NODE2: trinidad-01
+SEC_SVM: alexz_secondary_alpha
+PRI_AGGR: aggr1_barbuda_01
+SEC_AGGR: aggr1_trinidad_02
