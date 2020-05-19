@@ -1,0 +1,29 @@
+- name: Create protected Volume
+  hosts: localhost
+  gather_facts: false
+  vars:
+      https:          true
+      validate_certs: false
+      use_rest:       "Always"
+
+  tasks:
+  - name: load vars
+    include_vars:
+      dir: ../vars
+
+  - name: Create ONTAP/ONTAP SnapMirror
+    na_ontap_snapmirror:
+      state: present
+      connection_type: ontap_ontap
+      relationship_type: data_protection
+      source_volume: "{{ PRI_SVM }}_nfs_01"
+      destination_volume: "{{ SEC_SVM }}_nfs_01_dst"
+      source_vserver: "{{ PRI_SVM }}"
+      destination_vserver: "{{ SEC_SVM }}"
+      schedule: hourly
+      policy: MirrorAllSnapshots
+      max_transfer_rate: 1000
+#      initialize: True
+      hostname: "{{ SEC_CLU }}"
+      username: "{{ SEC_CLU_USER }}"
+      password: "{{ SEC_CLU_PASS }}"
